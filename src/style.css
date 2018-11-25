@@ -1,0 +1,36 @@
+body {
+	font-family: Sans-serif;
+}
+
+button {
+	width: 120px;
+	height: 40px;
+	display: block;
+	margin: auto auto 10px auto;
+	font-size: 16px;
+	background-color: Transparent;
+	border: 2px solid black;
+	cursor: pointer;
+}
+
+button:hover {
+	background-color: #b2b2b2;
+}
+
+#canvas {
+	position: absolute;
+	left: 50%;
+	transform: translate(-50%, 0);
+}
+
+#pauseMenu {
+	position: absolute;
+	width: 300px;
+	text-align: center;
+	border: solid;
+	top: 100px;
+	left: 0%;
+	transform: translate(-0%, 0);
+	background-color: lightgrey;
+	display: none;
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Three.js - Attempt 2</title>
+
+	<link rel="stylesheet" type="text/css" href="src/style.css">
+</head>
+<body>
+	<div id="container">
+	<canvas
+		id="canvas"
+		width="1000"
+		height="563"
+		oncontextmenu="return false;"
+		tabindex=1>
+	</canvas>
+	</div>
+	<div id="pauseMenu">
+		<p>Paused</p>
+		<button>Resume</button>
+		<button>Options</button>
+	</div>
+
+	<div>
+		<div>FPS: <span id="fpsLabel"></span></div>
+		<div>Free cam (NUM2): <span id="freeCamLabel">OFF</span></div>
+		<div>Bounding boxes (NUM3): <span id="boundingBoxesLabel">OFF</span></div>
+		<div>Wireframes (NUM4): <span id="wireframesLabel">OFF</span></div>
+		<div>Octree visualizer (NUM5): <span id="octreeVisualizerLabel">OFF</span></div>
+	</div>
+	
+
+	<script src="res/three.js"></script>
+	<script src="res/inflate.min.js"></script>
+	<script src="res/FBXLoader.js"></script>
+	<script src="res/OBJLoader.js"></script>
+	
+	<script src="src/input.js"></script>
+	<script src="src/utilities.js"></script>
+	<script src="src/octree.js"></script>
+	<script src="src/stage.js"></script>
+	<script src="src/debugController.js"></script>
+	<script src="src/player.js"></script>
+	<script src="src/states/state.js"></script>
+	<script src="src/states/gameplayState.js"></script>
+	<script src="src/states/pauseMenuState.js"></script>
+	<script src="src/gameManager.js"></script>
+
+	<script>
+		new GameManager().mainLoop();
+	</script>
+</body>
+</html>
