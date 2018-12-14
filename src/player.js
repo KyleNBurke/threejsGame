@@ -1,4 +1,4 @@
-function Player(scene, canvas, camera, stage) {
+function Player(scene, camera, stage) {
 	var material = new THREE.MeshLambertMaterial({color: "green", skinning: true});
 	var loader = new THREE.FBXLoader();
 	var meshGroup;
