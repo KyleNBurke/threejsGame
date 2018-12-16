@@ -17,10 +17,10 @@ function Player(scene, camera, stage) {
 	var pelvisRotationTime;
 	var pelvisRotationTimeFactor = 4;
 	var shouldResetLerp = false;
-	var sphericalPos = new THREE.Spherical(5, Math.PI / 3, Math.PI);
+	var sphericalPos = new THREE.Spherical(5, Math.PI / 2, Math.PI);
 	var rotationFactor = 0.001;
 	var zoomFactor = 0.005;
-	var cameraOffset = new THREE.Vector3(0.7, 1, 1);
+	var cameraOffset = new THREE.Vector3(-0.8, 2, 1);
 	var position = new THREE.Vector3();
 	var velocity = new THREE.Vector3();
 	var gravityVelocity = 0;
@@ -40,45 +40,39 @@ function Player(scene, camera, stage) {
 		torsoControlBone.remove(camera);
 		camera.position.copy(pos);
 		camera.quaternion.copy(quat);
-		camera.scale.setX(1);
 	}
 
 	this.exitFreeCam = function() {
 		update = true;
 		torsoControlBone.add(camera);
-		camera.scale.setX(-1);
 		updateCamera();
 	}
 
-	loader.load("res/player/player2.fbx", function(object) {
-		//console.log(object);
+	loader.load("res/player/player3.fbx", function(object) {
 		meshGroup = object;
-
 		Utilities.removeStaticKeyframeData(meshGroup.animations);
-
-		meshGroup.children[0].material = material;
-
+		var skinnedMesh = meshGroup.getObjectByName("playerMesh");
+		skinnedMesh.material = material;
+		torsoControlBone = skinnedMesh.skeleton.getBoneByName("torsoControlBone");
+		pelvisBone = skinnedMesh.skeleton.getBoneByName("pelvis");
 		mixer = new THREE.AnimationMixer(meshGroup);
-		idleAction = mixer.clipAction(THREE.AnimationClip.findByName(object.animations, "armatureMesh|idle"));
+		
+		idleAction = mixer.clipAction(THREE.AnimationClip.findByName(meshGroup.animations, "armatureMesh|idle"));
 		idleAction.setDuration(7);
 		idleAction.enabled = true;
 		idleAction.play();
 
-		walkAction = mixer.clipAction(THREE.AnimationClip.findByName(object.animations, "armatureMesh|walk"));
+		walkAction = mixer.clipAction(THREE.AnimationClip.findByName(meshGroup.animations, "armatureMesh|walk"));
 		walkAction.setDuration(1.5);
 		walkAction.enabled = false;
 		walkAction.play();
 
-		torsoControlBone = meshGroup.children[0].skeleton.bones[0];
-		camera.scale.setX(-1);
 		torsoControlBone.add(camera);
-		pelvisBone = meshGroup.children[0].skeleton.bones[7];
-
 		updateCamera();
 
 		meshGroup.add(collisionMesh);
 		collisionMesh.translateY(1.15);
-		
+
 		scene.add(meshGroup);
 	});
 
@@ -89,14 +83,14 @@ function Player(scene, camera, stage) {
 		//mouse move
 		var mouseMovement = Input.getInstance().getMouseMovement();
 		if(mouseMovement.x != 0 || mouseMovement.y != 0) {
-			var rotationX = mouseMovement.x * rotationFactor;
+			var rotationX = -mouseMovement.x * rotationFactor;
 			var rotationY = -mouseMovement.y * rotationFactor;
 
 			torsoControlBone.rotateY(rotationX);
 
 			if(Math.abs(torsoControlBone.rotation.y) > Math.PI / 3) {
 				torsoControlBone.rotation.y = Math.sign(torsoControlBone.rotation.y) * Math.PI / 3;
-				meshGroup.rotateY(-rotationX);
+				meshGroup.rotateY(rotationX);
 				torsoRotationFrameCount = 0;
 			}
 			
@@ -273,7 +267,9 @@ function Player(scene, camera, stage) {
 
 	function updateCamera() {
 		camera.position.setFromSpherical(sphericalPos);
-		camera.lookAt(new THREE.Vector3(0, 0, 0));
+		var pos = new THREE.Vector3();
+		meshGroup.getWorldPosition(pos);
+		camera.lookAt(pos);
 		camera.position.add(cameraOffset);
 	}
 

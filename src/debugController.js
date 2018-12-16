@@ -18,16 +18,16 @@ function DebugController(gameManager, stage, player, camera) {
             currFrames = 0;
         }
 
-        if(Input.getInstance().isKeyPressed(49/*98*/)) //NUMPAD 3
+        if(Input.getInstance().isKeyPressed(49/*98*/)) //1
             toggleFreeCam();
 
-        if(Input.getInstance().isKeyPressed(50/*99*/)) //NUMPAD 3
+        if(Input.getInstance().isKeyPressed(50/*99*/)) //2
             toggleBoundingBoxes();
         
-        if(Input.getInstance().isKeyPressed(51/*100*/)) //NUMPAD 4
+        if(Input.getInstance().isKeyPressed(51/*100*/)) //3
             toggleWireframe();
 
-        if(Input.getInstance().isKeyPressed(52/*101*/)) //NUMPAD 5
+        if(Input.getInstance().isKeyPressed(52/*101*/)) //4
             toggleOctreeVisualizer();
         
         if(freeCamToggle) {
