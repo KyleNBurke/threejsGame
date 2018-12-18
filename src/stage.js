@@ -3,7 +3,6 @@ function Stage(scene) {
 	this.boundingBoxes = [];
 	this.octree = new Octree(scene);
 
-	//var loader = new THREE.FBXLoader();
 	var loader = new THREE.OBJLoader();
 	var terrainHeightMap = [];
 	var terrainDist;
@@ -48,22 +47,19 @@ function Stage(scene) {
 	}
 
 	var processTerrain = function(obj) {
-		var posArr = obj.geometry.attributes.position.array;
-		terrainCount = Math.sqrt(posArr.length / 18);
-
-		var minX = Math.round(posArr[0]);
-		var maxX = Math.round(posArr[0]);
-		for(var i = 3; i < posArr.length; i += 3) {
-			minX = Math.min(minX, Math.round(posArr[i]));
-			maxX = Math.max(maxX, Math.round(posArr[i]));
+		var posAttr = obj.geometry.getAttribute("position");
+		terrainCount = Math.sqrt(posAttr.count / 6);
+		terrainDist = Math.round(posAttr.getX(1)) - Math.round(posAttr.getX(0));
+		
+		if(terrainCount % 2 != 0) {
+			console.error("Terrain tile count must be even");
+			return;
 		}
 
-		terrainDist = (maxX - minX) / terrainCount;
-
-		for(var i = 0; i < posArr.length; i += 3) {
-			var x = Math.round(posArr[i]);
-			var y = Math.round(posArr[i + 1]);
-			var z = Math.round(posArr[i + 2]);
+		for(var i = 0; i < posAttr.count; i++) {
+			var x = Math.round(posAttr.getX(i));
+			var y = Math.round(posAttr.getY(i));
+			var z = Math.round(posAttr.getZ(i));
 			var xArr = x / terrainDist + terrainCount / 2;
 			var yArr = z / terrainDist + terrainCount / 2;
 
@@ -72,34 +68,44 @@ function Stage(scene) {
 
 			terrainHeightMap[xArr][yArr] = y;
 		}
-
-		//console.log(terrainHeightMap);
 	}
 
-	this.getTerrainHeight = function(position) {
-		if(terrainHeightMap.length == 0)
-			return 0;
+	this.getTerrainSurface = function(position) {
+		var offX = Math.abs(position.x) > terrainCount / 2 * terrainDist;
+		var offY = Math.abs(position.z) > terrainCount / 2 * terrainDist;
+		if(terrainHeightMap.length == 0 || offX || offY)
+			return [0, new THREE.Vector3(0, 1, 0)];
 
-		var x = Math.ceil(position.x / terrainDist);
-		var y = Math.ceil(position.z / terrainDist);
-		var xArr = x + terrainCount / (terrainCount / 2);
-		var yArr = y + terrainCount / (terrainCount / 2);
-		var diagHeight = position.x + (y - x) * terrainDist;
+		var x = Math.floor(position.x / terrainDist);
+		var y = Math.floor(position.z / terrainDist);
+		var xArr = x + terrainCount / 2;
+		var yArr = y + terrainCount / 2;
+		var xRem = position.x % terrainDist;
+		var yRem = position.z % terrainDist;
+		if(xRem < 0)
+			xRem += terrainDist;
+		if(yRem < 0)
+			yRem += terrainDist;
 
-		var a = [x * terrainDist, terrainHeightMap[xArr][yArr], y * terrainDist];
-		var c = [(x - 1) * terrainDist, terrainHeightMap[xArr - 1][yArr - 1], (y - 1) * terrainDist];
+		var a = new THREE.Vector3(x * terrainDist, terrainHeightMap[xArr][yArr], y * terrainDist);
+		var c = new THREE.Vector3((x + 1) * terrainDist, terrainHeightMap[xArr + 1][yArr + 1], (y + 1) * terrainDist);
 		var b;
-
-		if(position.z >= diagHeight)
-			b = [(x - 1) * terrainDist, terrainHeightMap[xArr - 1][yArr], y * terrainDist];
+		if(yRem > xRem)
+			b = new THREE.Vector3(x * terrainDist, terrainHeightMap[xArr][yArr + 1], (y + 1) * terrainDist);
 		else
-			b = [x * terrainDist, terrainHeightMap[xArr][yArr - 1], (y - 1) * terrainDist];
-	
-		var denom = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2]);
-		var w1 = ((b[2] - c[2]) * (position.x - c[0]) + (c[0] - b[0]) * (position.z - c[2])) / denom;
-		var w2 = ((c[2] - a[2]) * (position.x - c[0]) + (a[0] - c[0]) * (position.z - c[2])) / denom;
+			b = new THREE.Vector3((x + 1) * terrainDist, terrainHeightMap[xArr + 1][yArr], y * terrainDist);
+
+		var denom = (b.z - c.z) * (a.x - c.x) + (c.x - b.x) * (a.z - c.z);
+		var w1 = ((b.z - c.z) * (position.x - c.x) + (c.x - b.x) * (position.z - c.z)) / denom;
+		var w2 = ((c.z - a.z) * (position.x - c.x) + (a.x - c.x) * (position.z - c.z)) / denom;
 		var w3 = 1 - w1 - w2;
 
-		return w1 * a[1] + w2 * b[1] + w3 * c[1];
+		var height = w1 * a.y + w2 * b.y + w3 * c.y;
+		var normal = new THREE.Vector3();
+		new THREE.Triangle(a, b, c).getNormal(normal);
+		if(normal.clone().dot(new THREE.Vector3(0, 1, 0)) < 0)
+			normal.negate();
+
+		return { height: height, normal: normal };
 	}
 }

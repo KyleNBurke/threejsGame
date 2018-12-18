@@ -6,7 +6,7 @@ function DebugController(gameManager, stage, player, camera) {
     var freeCamRotationFactor = 0.001;
     var boundingBoxesToggle = false;
     var wireframesToggle = false;
-    var octreeVisualizer = false;
+    var octreeToggle = false;
 
     this.update = function(timeStep) {
         currTime += timeStep;
@@ -94,11 +94,11 @@ function DebugController(gameManager, stage, player, camera) {
     }
 
     var toggleOctreeVisualizer = function() {
-        octreeVisualizer = !octreeVisualizer;
+        octreeToggle = !octreeToggle;
 
-        gameManager.octreeVisualizer.textContent = octreeVisualizer ? "ON" : "OFF";
+        gameManager.octreeToggle.textContent = octreeToggle ? "ON" : "OFF";
 
         for(var i = 0; i < stage.octree.boundingBoxes.length; i++)
-            stage.octree.boundingBoxes[i].material.visible = octreeVisualizer;
+            stage.octree.boundingBoxes[i].material.visible = octreeToggle;
     }
 }

@@ -21,7 +21,7 @@ GameplayState.prototype.onEnter = function() {
 
 	//load stage
 	this.stage = new Stage(this.gameManager.scene);
-	this.stage.load("res/stages/scene3.2.obj");
+	this.stage.load("res/stages/terrain1.obj");
 	
 	this.player = new Player(this.gameManager.scene, this.gameManager.camera, this.stage);
 

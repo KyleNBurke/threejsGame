@@ -84,7 +84,7 @@ var EPA = function(aWorldVerts, bWorldVerts, simplex, scene) {
 		var dist = point.clone().dot(face.norm);
 
 		if(dist - face.dist < epsilon) {
-			res = {dir: face.norm, dist: dist + epsilon};
+			res = {dir: face.norm.negate(), dist: dist + epsilon};
 			break;
 		}
 

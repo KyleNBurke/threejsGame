@@ -18,7 +18,7 @@ function GameManager() {
 	this.freeCamLabel = document.getElementById("freeCamLabel");
 	this.boundingBoxesLabel = document.getElementById("boundingBoxesLabel");
 	this.wireframesLabel = document.getElementById("wireframesLabel");
-	this.octreeVisualizer = document.getElementById("octreeVisualizerLabel");
+	this.octreeToggle = document.getElementById("octreeLabel");
 
 	var maxFPS = 120;
 	var elapsedTime = 0;

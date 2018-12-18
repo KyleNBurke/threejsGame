@@ -32,6 +32,7 @@ function Player(scene, camera, stage) {
 	var update = true;
 	var collisionMesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.2, 0.7), new THREE.MeshBasicMaterial({color: "yellow", wireframe: true, visible: true}));
 	var surfaceNormal = new THREE.Vector3(0, 1, 0);
+	var walkableAngle = 0.7;
 
 	this.enterFreeCam = function() {
 		update = false;
@@ -198,13 +199,12 @@ function Player(scene, camera, stage) {
 		meshGroup.translateZ(velocity.z * timeStep);
 
 		mixer.update(timeStep);
-		//boxHelper.update();
 
 		meshGroup.updateMatrixWorld();
-		resolveCollisions();
+		detectCollisions();
 	}
 
-	function resolveCollisions() {
+	function detectCollisions() {
 		surfaceNormal = new THREE.Vector3(0, 1, 0);
 		var colliding = false;
 
@@ -221,39 +221,52 @@ function Player(scene, camera, stage) {
 					collisionMesh.material.color.set("red");
 					colliding = true;
 					var up = new THREE.Vector3(0, 1, 0);
-					
-					if(res.dir.clone().negate().dot(up) >= 0.7) { //walkable
+					if(res.dir.clone().dot(up) >= walkableAngle) { //walkable
 						var resUp = up.clone().setLength(res.dist / Math.cos(up.clone().dot(res.dir)));
-						meshGroup.position.add(resUp);
-						meshGroup.updateMatrixWorld();
-
-						surfaceNormal = res.dir.clone().negate();
-						var quat = new THREE.Quaternion();
-						meshGroup.getWorldQuaternion(quat);
-						surfaceNormal.applyQuaternion(quat.inverse());
-
-						gravityVelocity = -gravity;
+						resolveCollisionUp(res.dir, resUp);
 					}
 					else {
-						meshGroup.position.sub(res.dir.clone().multiplyScalar(res.dist));
-						meshGroup.updateMatrixWorld();
-
-						var quat = new THREE.Quaternion();
-						meshGroup.getWorldQuaternion(quat);
-						res.dir.negate().applyQuaternion(quat.inverse());
-						velocity.projectOnPlane(res.dir);
+						resolveCollision(res);
 					}
 				}
 			}
 		}
 
-		//this code is now wrong with the implementation of walkable/non-walkable surfaces
-		var terrainHeight = 0; //stage.getTerrainHeight(meshGroup.position);
-		if(meshGroup.position.y < terrainHeight) {
-			meshGroup.position.y = terrainHeight;
-			//velocity.y = 0; //configure for ground sliding? like wall sliding, might help stutter
-			gravityVelocity = 0;
+		var terrainSurf = stage.getTerrainSurface(meshGroup.position);
+		if(meshGroup.position.y < terrainSurf.height) {
+			var up = new THREE.Vector3(0, 1, 0);
+			if(terrainSurf.normal.clone().dot(up) >= walkableAngle) { //walkable
+				var resUp = up.clone().setLength(terrainSurf.height - meshGroup.position.y);
+				resolveCollisionUp(terrainSurf.normal, resUp);
+			}
+			else {
+				var dist = Math.cos(up.clone().dot(terrainSurf.normal)) * (terrainSurf.height - meshGroup.position.y);
+				var res = { dist: dist , dir: terrainSurf.normal };
+				resolveCollision(res);
+			}
 		}
+	}
+
+	function resolveCollisionUp(surfNorm, resUp) {
+		meshGroup.position.add(resUp);
+		meshGroup.updateMatrixWorld();
+
+		surfaceNormal = surfNorm;//res.dir.clone().negate();
+		var quat = new THREE.Quaternion();
+		meshGroup.getWorldQuaternion(quat);
+		surfaceNormal.applyQuaternion(quat.inverse());
+
+		gravityVelocity = -gravity;
+	}
+
+	function resolveCollision(resObj) {
+		meshGroup.position.add(resObj.dir.clone().multiplyScalar(resObj.dist));
+		meshGroup.updateMatrixWorld();
+
+		var quat = new THREE.Quaternion();
+		meshGroup.getWorldQuaternion(quat);
+		resObj.dir.applyQuaternion(quat.inverse());
+		velocity.projectOnPlane(resObj.dir);
 	}
 
 	var pelvisRotationLerpTo = function(pelvisRotationEndNew) {
