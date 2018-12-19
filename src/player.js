@@ -21,10 +21,9 @@ function Player(scene, camera, stage) {
 	var rotationFactor = 0.001;
 	var zoomFactor = 0.005;
 	var cameraOffset = new THREE.Vector3(-0.8, 2, 1);
-	var position = new THREE.Vector3();
 	var velocity = new THREE.Vector3();
 	var gravityVelocity = 0;
-	var maxSpeed = 500;
+	var terminalVelocity = 20;
 	var acceleration = 0.6;
 	var deceleration = 0.9;
 	var jumpVelociy = 17;
@@ -87,7 +86,7 @@ function Player(scene, camera, stage) {
 			var rotationX = -mouseMovement.x * rotationFactor;
 			var rotationY = -mouseMovement.y * rotationFactor;
 
-			torsoControlBone.rotateY(rotationX);
+			torsoControlBone.rotation.y -= rotationX;
 
 			if(Math.abs(torsoControlBone.rotation.y) > Math.PI / 3) {
 				torsoControlBone.rotation.y = Math.sign(torsoControlBone.rotation.y) * Math.PI / 3;
@@ -138,7 +137,6 @@ function Player(scene, camera, stage) {
 		if(direction.length() != 0) {
 			direction.normalize();
 			var torsoPelvisRotDiff = torsoControlBone.rotation.y + pelvisBone.rotation.y;
-			var pRot = pelvisBone.rotation.y;
 			meshGroup.rotateY(-torsoControlBone.rotation.y);
 			torsoControlBone.rotation.y = 0;
 
@@ -185,14 +183,8 @@ function Player(scene, camera, stage) {
 		velocity.add(direction.multiplyScalar(acceleration)).multiplyScalar(deceleration);
 		gravityVelocity -= gravity;
 
-		//isn't even necessary?
-		//velocity.x = Utilities.clamp(velocity.x, -1, 1);
-		//velocity.z = Utilities.clamp(velocity.z, -1, 1);
-
-		//if(Math.abs(velocity.x) < 0.0001)
-		//	velocity.x = 0;
-		//if(Math.abs(velocity.z) < 0.0001)
-		//	velocity.z = 0;
+		if(gravityVelocity < -terminalVelocity)
+			gravityVelocity = -terminalVelocity;
 
 		meshGroup.translateX(velocity.x * timeStep);
 		meshGroup.translateY((velocity.y + gravityVelocity) * timeStep);
@@ -206,7 +198,6 @@ function Player(scene, camera, stage) {
 
 	function detectCollisions() {
 		surfaceNormal = new THREE.Vector3(0, 1, 0);
-		var colliding = false;
 
 		var collisionMeshBounds = new THREE.Box3().setFromObject(collisionMesh);
 		var gameObjects = stage.octree.retrieve(meshGroup);
@@ -219,7 +210,6 @@ function Player(scene, camera, stage) {
 				
 				if(res != null) {
 					collisionMesh.material.color.set("red");
-					colliding = true;
 					var up = new THREE.Vector3(0, 1, 0);
 					if(res.dir.clone().dot(up) >= walkableAngle) { //walkable
 						var resUp = up.clone().setLength(res.dist / Math.cos(up.clone().dot(res.dir)));

@@ -8,25 +8,14 @@ GameplayState.prototype.constructor = UpdatableState;
 GameplayState.prototype.onEnter = function() {
 	var ambientLight = new THREE.AmbientLight(0x404040);
 	this.gameManager.scene.add(ambientLight);
-
-	var pointLight = new THREE.PointLight(0x404040);
-	pointLight.position.y = 5;
+	var pointLight = new THREE.PointLight(0x404040, 1);
+	pointLight.position.set(0, 8, 0);
 	this.gameManager.scene.add(pointLight);
 
-	var floorGeo = new THREE.PlaneGeometry(100, 100, 10, 10);
-	var floorMat = new THREE.MeshLambertMaterial({color: 0xdddacc});
-	var floorMesh = new THREE.Mesh(floorGeo, floorMat);
-	floorMesh.rotation.x = -Math.PI / 2;
-	//this.gameManager.scene.add(floorMesh);
-
-	//load stage
 	this.stage = new Stage(this.gameManager.scene);
 	this.stage.load("res/stages/terrain1.obj");
-	
 	this.player = new Player(this.gameManager.scene, this.gameManager.camera, this.stage);
-
 	this.debugController = new DebugController(this.gameManager, this.stage, this.player, this.gameManager.camera);
-
 	var that = this;
 
 	document.addEventListener("pointerlockchange", onPointerLockChange);

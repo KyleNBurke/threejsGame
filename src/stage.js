@@ -74,7 +74,7 @@ function Stage(scene) {
 		var offX = Math.abs(position.x) > terrainCount / 2 * terrainDist;
 		var offY = Math.abs(position.z) > terrainCount / 2 * terrainDist;
 		if(terrainHeightMap.length == 0 || offX || offY)
-			return [0, new THREE.Vector3(0, 1, 0)];
+		return { height: 0, normal: new THREE.Vector3(0, 1, 0) };
 
 		var x = Math.floor(position.x / terrainDist);
 		var y = Math.floor(position.z / terrainDist);
