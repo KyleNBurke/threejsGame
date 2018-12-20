@@ -37,7 +37,10 @@ Utilities.removeStaticKeyframeData = function(animations) {
 }
 
 Utilities.GJK = function(player, object, scene) {
-	var aGeo = player.geometry;
+	//var aGeo = player.geometry;
+	//really should preprocess this information for all objects but its fine for now
+	var aGeo = new THREE.Geometry().fromBufferGeometry(player.geometry);
+	aGeo.mergeVertices();
 	var bGeo = new THREE.Geometry().fromBufferGeometry(object.geometry);
 	bGeo.mergeVertices();
 

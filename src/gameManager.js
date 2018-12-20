@@ -19,6 +19,7 @@ function GameManager() {
 	this.boundingBoxesLabel = document.getElementById("boundingBoxesLabel");
 	this.wireframesLabel = document.getElementById("wireframesLabel");
 	this.octreeToggle = document.getElementById("octreeLabel");
+	this.playerCollisionHull = document.getElementById("playerCollisionHull");
 
 	var maxFPS = 120;
 	var elapsedTime = 0;

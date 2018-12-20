@@ -7,6 +7,7 @@ function DebugController(gameManager, stage, player, camera) {
     var boundingBoxesToggle = false;
     var wireframesToggle = false;
     var octreeToggle = false;
+    var playerCollisionHull = false;
 
     this.update = function(timeStep) {
         currTime += timeStep;
@@ -18,17 +19,20 @@ function DebugController(gameManager, stage, player, camera) {
             currFrames = 0;
         }
 
-        if(Input.getInstance().isKeyPressed(49/*98*/)) //1
+        if(Input.getInstance().isKeyPressed(49)) //1
             toggleFreeCam();
 
-        if(Input.getInstance().isKeyPressed(50/*99*/)) //2
+        if(Input.getInstance().isKeyPressed(50)) //2
             toggleBoundingBoxes();
         
-        if(Input.getInstance().isKeyPressed(51/*100*/)) //3
+        if(Input.getInstance().isKeyPressed(51)) //3
             toggleWireframe();
 
-        if(Input.getInstance().isKeyPressed(52/*101*/)) //4
-            toggleOctreeVisualizer();
+        if(Input.getInstance().isKeyPressed(52)) //4
+            toggleOctree();
+
+        if(Input.getInstance().isKeyPressed(53)) //5
+            togglePlayerCollisionHull();
         
         if(freeCamToggle) {
             var direction = new THREE.Vector3();
@@ -93,12 +97,20 @@ function DebugController(gameManager, stage, player, camera) {
             stage.objects[i].material.wireframe = wireframesToggle;
     }
 
-    var toggleOctreeVisualizer = function() {
+    var toggleOctree = function() {
         octreeToggle = !octreeToggle;
 
         gameManager.octreeToggle.textContent = octreeToggle ? "ON" : "OFF";
 
         for(var i = 0; i < stage.octree.boundingBoxes.length; i++)
             stage.octree.boundingBoxes[i].material.visible = octreeToggle;
+    }
+
+    var togglePlayerCollisionHull = function() {
+        playerCollisionHull = !playerCollisionHull;
+
+        gameManager.playerCollisionHull.textContent = playerCollisionHull ? "ON" : "OFF";
+
+        player.collisionMesh.material.visible = playerCollisionHull;
     }
 }

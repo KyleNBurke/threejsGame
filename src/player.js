@@ -1,7 +1,7 @@
 function Player(scene, camera, stage) {
-	var material = new THREE.MeshLambertMaterial({color: "green", skinning: true});
 	var loader = new THREE.FBXLoader();
 	var meshGroup;
+	this.collisionMesh;
 	var mixer;
 	var actionFadeFactor = 0.3;
 	var idleAction;
@@ -29,9 +29,9 @@ function Player(scene, camera, stage) {
 	var jumpVelociy = 17;
 	var gravity = 0.5;
 	var update = true;
-	var collisionMesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.2, 0.7), new THREE.MeshBasicMaterial({color: "yellow", wireframe: true, visible: true}));
 	var surfaceNormal = new THREE.Vector3(0, 1, 0);
 	var walkableAngle = 0.7;
+	var that = this;
 
 	this.enterFreeCam = function() {
 		update = false;
@@ -48,11 +48,13 @@ function Player(scene, camera, stage) {
 		updateCamera();
 	}
 
-	loader.load("res/player/player3.fbx", function(object) {
+	loader.load("res/player/player5.fbx", function(object) {
 		meshGroup = object;
 		Utilities.removeStaticKeyframeData(meshGroup.animations);
 		var skinnedMesh = meshGroup.getObjectByName("playerMesh");
-		skinnedMesh.material = material;
+		skinnedMesh.material = new THREE.MeshLambertMaterial({color: "green", skinning: true});
+		that.collisionMesh = meshGroup.getObjectByName("collisionMesh");
+		that.collisionMesh.material = new THREE.MeshBasicMaterial({color: "yellow", wireframe: true, visible: false})
 		torsoControlBone = skinnedMesh.skeleton.getBoneByName("torsoControlBone");
 		pelvisBone = skinnedMesh.skeleton.getBoneByName("pelvis");
 		mixer = new THREE.AnimationMixer(meshGroup);
@@ -67,11 +69,14 @@ function Player(scene, camera, stage) {
 		walkAction.enabled = false;
 		walkAction.play();
 
+		var collisionMeshPos = new THREE.Vector3();
+		that.collisionMesh.getWorldPosition(collisionMeshPos);
+		torsoControlBone.worldToLocal(collisionMeshPos);
+		torsoControlBone.add(that.collisionMesh);
+		that.collisionMesh.position.copy(collisionMeshPos);
+
 		torsoControlBone.add(camera);
 		updateCamera();
-
-		meshGroup.add(collisionMesh);
-		collisionMesh.translateY(1.15);
 
 		scene.add(meshGroup);
 	});
@@ -199,17 +204,17 @@ function Player(scene, camera, stage) {
 	function detectCollisions() {
 		surfaceNormal = new THREE.Vector3(0, 1, 0);
 
-		var collisionMeshBounds = new THREE.Box3().setFromObject(collisionMesh);
+		var collisionMeshBounds = new THREE.Box3().setFromObject(that.collisionMesh);
 		var gameObjects = stage.octree.retrieve(meshGroup);
-		collisionMesh.material.color.set("yellow");
+		that.collisionMesh.material.color.set("yellow");
 
 		for(var i = 0; i < gameObjects.length; i++) {
 			var gameObjectBounds = new THREE.Box3().setFromObject(gameObjects[i]);
 			if(collisionMeshBounds.intersectsBox(gameObjectBounds)) {
-				var res = Utilities.GJK(collisionMesh, gameObjects[i], scene);
+				var res = Utilities.GJK(that.collisionMesh, gameObjects[i], scene);
 				
 				if(res != null) {
-					collisionMesh.material.color.set("red");
+					that.collisionMesh.material.color.set("red");
 					var up = new THREE.Vector3(0, 1, 0);
 					if(res.dir.clone().dot(up) >= walkableAngle) { //walkable
 						var resUp = up.clone().setLength(res.dist / Math.cos(up.clone().dot(res.dir)));
