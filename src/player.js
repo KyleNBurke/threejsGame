@@ -48,7 +48,7 @@ function Player(scene, camera, stage) {
 		updateCamera();
 	}
 
-	loader.load("res/player/player5.fbx", function(object) {
+	loader.load("res/player/player.fbx", function(object) {
 		meshGroup = object;
 		Utilities.removeStaticKeyframeData(meshGroup.animations);
 		var skinnedMesh = meshGroup.getObjectByName("playerMesh");
