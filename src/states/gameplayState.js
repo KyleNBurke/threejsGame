@@ -13,7 +13,7 @@ GameplayState.prototype.onEnter = function() {
 	this.gameManager.scene.add(pointLight);
 
 	this.stage = new Stage(this.gameManager.scene);
-	this.stage.load("res/stages/terrain1.obj");
+	this.stage.load("res/stages/stage1.obj");
 	this.player = new Player(this.gameManager.scene, this.gameManager.camera, this.stage);
 	this.debugController = new DebugController(this.gameManager, this.stage, this.player, this.gameManager.camera);
 	var that = this;
