@@ -191,6 +191,11 @@ function Player(scene, camera, stage) {
 		if(gravityVelocity < -terminalVelocity)
 			gravityVelocity = -terminalVelocity;
 
+		if(meshGroup.position.y < 0) {
+			meshGroup.position.y = 0;
+			gravityVelocity = 0;
+		}
+
 		meshGroup.translateX(velocity.x * timeStep);
 		meshGroup.translateY((velocity.y + gravityVelocity) * timeStep);
 		meshGroup.translateZ(velocity.z * timeStep);
@@ -204,11 +209,11 @@ function Player(scene, camera, stage) {
 	function detectCollisions() {
 		surfaceNormal = new THREE.Vector3(0, 1, 0);
 
-		var collisionMeshBounds = new THREE.Box3().setFromObject(that.collisionMesh);
 		var gameObjects = stage.octree.retrieve(meshGroup);
 		that.collisionMesh.material.color.set("yellow");
 
 		for(var i = 0; i < gameObjects.length; i++) {
+			var collisionMeshBounds = new THREE.Box3().setFromObject(that.collisionMesh);
 			var gameObjectBounds = new THREE.Box3().setFromObject(gameObjects[i]);
 			if(collisionMeshBounds.intersectsBox(gameObjectBounds)) {
 				var res = Utilities.GJK(that.collisionMesh, gameObjects[i], scene);
@@ -227,26 +232,14 @@ function Player(scene, camera, stage) {
 			}
 		}
 
-		var terrainSurf = stage.getTerrainSurface(meshGroup.position);
-		if(meshGroup.position.y < terrainSurf.height) {
-			var up = new THREE.Vector3(0, 1, 0);
-			if(terrainSurf.normal.clone().dot(up) >= walkableAngle) { //walkable
-				var resUp = up.clone().setLength(terrainSurf.height - meshGroup.position.y);
-				resolveCollisionUp(terrainSurf.normal, resUp);
-			}
-			else {
-				var dist = Math.cos(up.clone().dot(terrainSurf.normal)) * (terrainSurf.height - meshGroup.position.y);
-				var res = { dist: dist , dir: terrainSurf.normal };
-				resolveCollision(res);
-			}
-		}
+		stage.terrainKdTree.retrieve(meshGroup.position);
 	}
 
 	function resolveCollisionUp(surfNorm, resUp) {
 		meshGroup.position.add(resUp);
 		meshGroup.updateMatrixWorld();
 
-		surfaceNormal = surfNorm;//res.dir.clone().negate();
+		surfaceNormal = surfNorm;
 		var quat = new THREE.Quaternion();
 		meshGroup.getWorldQuaternion(quat);
 		surfaceNormal.applyQuaternion(quat.inverse());

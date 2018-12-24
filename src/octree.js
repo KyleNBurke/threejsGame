@@ -9,7 +9,7 @@ function Octree(scene) {
 
 	function Node(level, position, size) {
 		this.level = level;
-		this.bounds = new THREE.Box3(position, position.clone().addScalar(size))
+		this.bounds = new THREE.Box3(position, position.clone().addScalar(size));
 		this.childNodes = [];
 		this.objects = [];
 		
