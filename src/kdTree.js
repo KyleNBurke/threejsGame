@@ -1,168 +1,119 @@
 function KdTree(scene) {
-    var faces = [];
-    var rootSize = 16;
-    var root;
-    var dimArr = ["x", "y", "z"];
-    var maxNodeFaces = 4;
+	var maxNodeGeos = 2;
+	var objs;
+	var root;
 
-    var retrievedFaceNormals = [];
+	function Node(bounds) {
+		this.bounds = bounds;
+		this.childA;
+		this.childB;
+		this.objsIndex = [];
 
-    function Node(bounds) {
-        this.bounds = bounds;
-        this.childA;
-        this.childB;
-        this.faces = [];
+		scene.add(new THREE.Box3Helper(this.bounds));
+	}
 
-        var bb = new THREE.Box3Helper(this.bounds);
-        scene.add(bb);
-    }
+	this.construct = function(objsPassed, bounds, scaleFactor) {
+		objs = objsPassed;
 
-    this.construct = function(geometry) {
-        var posAttr = geometry.getAttribute("position");
+		var objsIndex = [];
+		for(var i = 0; i < objs.length; i++)
+			objsIndex.push(i);
 
-        for(var i = 0; i < posAttr.count; i += 3) {
-            var a = new THREE.Vector3(posAttr.getX(i), posAttr.getY(i), posAttr.getZ(i));
-            var b = new THREE.Vector3(posAttr.getX(i + 1), posAttr.getY(i + 1), posAttr.getZ(i + 1));
-            var c = new THREE.Vector3(posAttr.getX(i + 2), posAttr.getY(i + 2), posAttr.getZ(i + 2));
-            //console.log(new THREE.Triangle(a, b, c).getMidpoint(new THREE.Vector3()));
+		root = new Node(bounds);
+		constructNode(root, 0, objsIndex, [], scaleFactor);
+	}
 
-            faces.push(new THREE.Triangle(a, b, c));
-        }
-        //console.log(faces);
+	function constructNode(node, level, objsIndex, crossOverObjsIndex, scaleFactor) {
+		if(objsIndex.length <= maxNodeGeos) {
+			node.objsIndex = objsIndex.concat(crossOverObjsIndex);
+			return;
+		}
 
-        //we should make the bounds of the root, the actual bounds of the terrain obj
-        var min = new THREE.Vector3(-rootSize, -rootSize, -rootSize);
-        var max = new THREE.Vector3(rootSize, rootSize, rootSize);
-        root = new Node(new THREE.Box3(min, max));
+		var dim = level % 3;
+		var objsIndexSorted = objsIndex.slice().sort(compare(dim));
+		var sep = getMedian(objsIndexSorted, dim);
 
-        var facesIndex = [];
-        for(var i = 0; i < faces.length; i++)
-            facesIndex.push(i);
-
-        constructNode(root, 0, facesIndex, []);
-    }
-
-    function constructNode(node, level, nodeFaces, crossOverFaces) {
-        if(nodeFaces.length <= maxNodeFaces) {
-            node.faces = nodeFaces.slice().concat(crossOverFaces);
-            return;
-        }
-
-        var dim = dimArr[level % 3];
-        var facesSorted = nodeFaces.slice().sort(compare(dim));
-        var sep = getMedian(facesSorted)[dim];
-
-        var minA = node.bounds.min.clone();
         var maxA = node.bounds.max.clone();
-        minA[dim] = sep;
+		var minA = node.bounds.min.clone();
+        minA.setComponent(dim, sep);
 
-        var minB = node.bounds.min.clone();
         var maxB = node.bounds.max.clone();
-        maxB[dim] = sep;
+        var minB = node.bounds.min.clone();
+		maxB.setComponent(dim, sep);
+		
+		node.childA = new Node(new THREE.Box3(minA, maxA));
+		node.childB = new Node(new THREE.Box3(minB, maxB));
+		
+		var med = objsIndexSorted.length % 2 == 0 ? objsIndexSorted.length / 2 : (objsIndexSorted.length - 1) / 2;
+		var objsIndexA = objsIndexSorted.slice(0, med);
+		var potentialCrossOverObjsIndexA = objsIndexSorted.slice(med).concat(crossOverObjsIndex);
+		var boundsA = node.childA.bounds.clone().expandByScalar(scaleFactor);
+		var crossOverObjsIndexA = [];
+		for(var i = 0; i < potentialCrossOverObjsIndexA.length; i++)
+			if(boundsA.intersectsBox(objs[potentialCrossOverObjsIndexA[i]].bounds))
+				crossOverObjsIndexA.push(potentialCrossOverObjsIndexA[i]);
+		
+		med = objsIndexSorted.length % 2 == 0 ? objsIndexSorted.length / 2 : (objsIndexSorted.length + 1) / 2;
+		var objsIndexB = objsIndexSorted.slice(med);
+		var potentialCrossOverObjsIndexB = objsIndexSorted.slice(0, med).concat(crossOverObjsIndex);
+		var boundsB = node.childB.bounds.clone().expandByScalar(scaleFactor);
+		var crossOverObjsIndexB = [];
+		for(var i = 0; i < potentialCrossOverObjsIndexB.length; i++)
+			if(boundsB.intersectsBox(objs[potentialCrossOverObjsIndexB[i]].bounds))
+				crossOverObjsIndexB.push(potentialCrossOverObjsIndexB[i]);
+		
+		constructNode(node.childA, level + 1, objsIndexA, crossOverObjsIndexA);
+		constructNode(node.childB, level + 1, objsIndexB, crossOverObjsIndexB);
+	}
 
-        node.childA = new Node(new THREE.Box3(minA, maxA));
-        node.childB = new Node(new THREE.Box3(minB, maxB));
-        //scale the child bounds by half the size of the player collision mesh bounds on appropriate axis
+	function compare(dim) {
+		return function(a, b) {
+			var centerA = new THREE.Vector3();
+			var centerB = new THREE.Vector3();
+			objs[a].bounds.getCenter(centerA);
+			objs[b].bounds.getCenter(centerB);
+			var valA = centerA.getComponent(dim);
+			var valB = centerB.getComponent(dim);
+	
+			if(valA < valB)
+				return 1;
+			if(valA > valB)
+				return -1;
+			else
+				return 0;
+		}
+	}
 
-        var divA = facesSorted.length % 2 == 0 ? facesSorted.length / 2 : (facesSorted.length - 1) / 2;
-        var facesA = facesSorted.slice(0, divA);
-        var potentialCrossOverFacesA = facesSorted.slice(divA).concat(crossOverFaces);
-        var crossOverFacesA = [];
-        for(var i = 0; i < potentialCrossOverFacesA.length; i++)
-            if(node.childA.bounds.intersectsTriangle(faces[potentialCrossOverFacesA[i]]))
-                crossOverFacesA.push(potentialCrossOverFacesA[i]);
-        
-        var divB = facesSorted.length % 2 == 0 ? facesSorted.length / 2 : (facesSorted.length + 1) / 2;
-        var facesB = facesSorted.slice(divB);
-        var potentialCrossOverFacesB = facesSorted.slice(0, divB).concat(crossOverFaces);
-        var crossOverFacesB = [];
-        for(var i = 0; i < potentialCrossOverFacesB.length; i++)
-            if(node.childB.bounds.intersectsTriangle(faces[potentialCrossOverFacesB[i]]))
-                crossOverFacesB.push(potentialCrossOverFacesB[i]);
-        
-        constructNode(node.childA, level + 1, facesA, crossOverFacesA);
-        constructNode(node.childB, level + 1, facesB, crossOverFacesB);
-    }
+	function getMedian(objsIndexSorted, dim) {
+		if(objsIndexSorted.length % 2 == 0) {
+			var med = objsIndexSorted.length / 2;
+			var centerA = new THREE.Vector3();
+			var centerB = new THREE.Vector3();
+			objs[objsIndexSorted[med - 1]].bounds.getCenter(centerA);
+			objs[objsIndexSorted[med]].bounds.getCenter(centerB);
+			sep = (centerA[dim] + centerB[dim]) / 2;
+			var center = centerA.add(centerB).multiplyScalar(0.5);
+			return center.getComponent(dim);
+		}
+		else {
+			var med = (objsIndexSorted.length - 1) / 2;
+			var center = new THREE.Vector3();
+			objs[objsIndexSorted[med]].bounds.getCenter(center);
+			return center.getComponent(dim);
+		}
+	}
 
-    function compare(dim) {
-        return function(a, b) {
-            var midA = new THREE.Vector3();
-            var midACoord = faces[a].getMidpoint(midA)[dim];
-            var midB = new THREE.Vector3();
-            var midBCoord = faces[b].getMidpoint(midB)[dim];
-    
-            if(midACoord < midBCoord)
-                return 1;
-            if(midACoord > midBCoord)
-                return -1;
-            else
-                return 0;
-        }
-    }
+	this.retrieve = function(position) {
+		return retrieveNode(root, position);
+	}
 
-    function getMedian(nodeFacesSorted) {
-        if(nodeFacesSorted.length % 2 == 0) {
-            var med = nodeFacesSorted.length / 2;
-            var midA = new THREE.Vector3();
-            faces[nodeFacesSorted[med - 1]].getMidpoint(midA);
-            var midB = new THREE.Vector3();
-            faces[nodeFacesSorted[med]].getMidpoint(midB);
+	function retrieveNode(node, position) {
+		if(node.objsIndex.length != 0)
+			return node.objsIndex;
 
-            return midA.add(midB).multiplyScalar(0.5);
-        }
-        else {
-            var med = (nodeFacesSorted.length - 1) / 2;
-            var mid = new THREE.Vector3();
-
-            return faces[nodeFacesSorted[med]].getMidpoint(mid);
-        }
-    }
-
-    this.retrieve = function(position) {
-        var res = retrieveNode(root, position);
-        
-        if(res.dup) {
-            //remove duplicate faces
-        }
-
-        for(var i = 0; i < retrievedFaceNormals.length; i++) {
-            scene.remove(retrievedFaceNormals[i]);
-        }
-
-        retrievedFaceNormals = [];
-        for(var i = 0; i < res.faces.length; i++) {
-            var f = faces[res.faces[i]];
-            var dir = new THREE.Vector3();
-            f.getNormal(dir);
-            var mid = new THREE.Vector3();
-            f.getMidpoint(mid);
-            var arrow = new THREE.ArrowHelper(dir, mid);
-            retrievedFaceNormals.push(arrow);
-            scene.add(arrow);
-        }
-
-        return res.faces;
-    }
-
-    function retrieveNode(node, position) {
-        if(node.faces.length != 0) {
-            return { dup: false, faces: node.faces }
-        }
-
-        var a = node.childA.bounds.containsPoint(position);
-        var b = node.childB.bounds.containsPoint(position);
-
-        if(a && b) {
-            var facesA = retrieveNode(node.childA, position).faces;
-            var facesB = retrieveNode(node.childB, position).faces;
-            console.log('in');
-            return { dup: true, faces: facesA.concat(facesB) };
-        }
-        else if(a) {
-            return retrieveNode(node.childA, position);
-        }
-        else {
-            return retrieveNode(node.childB, position);
-        }
-    }
+		if(node.childA.bounds.containsPoint(position))
+			return retrieveNode(node.childA, position);
+		else
+			return retrieveNode(node.childB, position);
+	}
 }

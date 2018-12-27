@@ -208,15 +208,16 @@ function Player(scene, camera, stage) {
 
 	function detectCollisions() {
 		surfaceNormal = new THREE.Vector3(0, 1, 0);
-
-		var gameObjects = stage.octree.retrieve(meshGroup);
 		that.collisionMesh.material.color.set("yellow");
+		//var gameObjects = stage.octree.retrieve(meshGroup);
+		var objectsIndex = stage.getCollisionObjsIndex(meshGroup.position);
 
-		for(var i = 0; i < gameObjects.length; i++) {
+		for(var i = 0; i < objectsIndex.length; i++) {
+			var object = stage.objects[objectsIndex[i]];
 			var collisionMeshBounds = new THREE.Box3().setFromObject(that.collisionMesh);
-			var gameObjectBounds = new THREE.Box3().setFromObject(gameObjects[i]);
-			if(collisionMeshBounds.intersectsBox(gameObjectBounds)) {
-				var res = Utilities.GJK(that.collisionMesh, gameObjects[i], scene);
+			//var gameObjectBounds = new THREE.Box3().setFromObject(gameObjects[i]);
+			if(collisionMeshBounds.intersectsBox(object.bounds)) {
+				var res = Utilities.GJK(that.collisionMesh, object, scene, that.collisionMesh.geometry, object.geo);
 				
 				if(res != null) {
 					that.collisionMesh.material.color.set("red");
@@ -232,7 +233,7 @@ function Player(scene, camera, stage) {
 			}
 		}
 
-		stage.terrainKdTree.retrieve(meshGroup.position);
+		//stage.terrainKdTree.retrieve(meshGroup.position);
 	}
 
 	function resolveCollisionUp(surfNorm, resUp) {

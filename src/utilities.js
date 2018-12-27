@@ -36,20 +36,20 @@ Utilities.removeStaticKeyframeData = function(animations) {
 	});
 }
 
-Utilities.GJK = function(player, object, scene) {
+Utilities.GJK = function(player, object, scene, playerGeo, objectGeo) {
 	//var aGeo = player.geometry;
 	//really should preprocess this information for all objects but its fine for now
-	var aGeo = new THREE.Geometry().fromBufferGeometry(player.geometry);
+	var aGeo = new THREE.Geometry().fromBufferGeometry(playerGeo);
 	aGeo.mergeVertices();
-	var bGeo = new THREE.Geometry().fromBufferGeometry(object.geometry);
+	var bGeo = new THREE.Geometry().fromBufferGeometry(objectGeo);
 	bGeo.mergeVertices();
 
 	var aWorldVerts = convertVertsToWorldSpace(aGeo.vertices, player);
-	var bWorldVerts = convertVertsToWorldSpace(bGeo.vertices, object);
+	var bWorldVerts = bGeo.vertices;//convertVertsToWorldSpace(bGeo.vertices, object);
 
 	var colliding = null;
 	var simplex = [];
-	var dir = object.getWorldPosition(new THREE.Vector3()).sub(player.getWorldPosition(new THREE.Vector3())).normalize();
+	var dir = new THREE.Vector3(0, 0, 1);//object.getWorldPosition(new THREE.Vector3()).sub(player.getWorldPosition(new THREE.Vector3())).normalize();
 
 	simplex.push(support(aWorldVerts, bWorldVerts, dir));
 	dir.negate();

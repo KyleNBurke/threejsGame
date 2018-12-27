@@ -11,10 +11,11 @@ GameplayState.prototype.onEnter = function() {
 	var pointLight = new THREE.PointLight(0x404040, 1);
 	pointLight.position.set(0, 8, 0);
 	this.gameManager.scene.add(pointLight);
-
+	
 	this.stage = new Stage(this.gameManager.scene);
 	this.stage.load("res/stages/stage2.obj");
 	this.player = new Player(this.gameManager.scene, this.gameManager.camera, this.stage);
+	
 	this.debugController = new DebugController(this.gameManager, this.stage, this.player, this.gameManager.camera);
 	var that = this;
 
