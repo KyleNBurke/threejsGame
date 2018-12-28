@@ -1,12 +1,9 @@
 function Stage(scene) {
 	this.objects = [];
 	this.boundingBoxes = [];
-	this.octree = new Octree(scene);
-	//this.terrainKdTreeOld = new KdTreeOld(scene);
 	var loader = new THREE.OBJLoader();
-	var that = this;
-
 	var kdTree = new KdTree(scene);
+	var that = this;
 
 	this.load = function(path) {
 		loader.load(path, function(group) {
@@ -15,17 +12,17 @@ function Stage(scene) {
 
 			for(var i = 0; i < group.children.length; i++) {
 				var obj = group.children[i];
-				obj.material = new THREE.MeshLambertMaterial();
 
 				if(obj.name.split("_")[0] == "terrain") {
+					obj.material = new THREE.MeshLambertMaterial({side: THREE.DoubleSide});
 					that.objects = that.objects.concat(processTerrain(obj));
 					continue;
 				}
-
+				
+				obj.material = new THREE.MeshLambertMaterial();
 				var bounds = new THREE.Box3().setFromObject(obj);
 				that.objects.push({geo: obj.geometry, bounds: bounds});
 			}
-			//console.log(objs);
 
 			//this is hard coded as the max player collision hull size on each axis
 			//this is trival to get but I had trouble referencing the player.collisionMesh due to
@@ -61,8 +58,6 @@ function Stage(scene) {
 	}
 
 	this.getCollisionObjsIndex = function(position) {
-		var objsIndex = kdTree.retrieve(position);
-		//console.log(objsIndex);
-		return objsIndex;
+		return kdTree.retrieve(position);
 	}
 }
