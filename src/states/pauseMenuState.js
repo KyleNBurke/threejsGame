@@ -21,12 +21,10 @@ PauseMenuState.prototype.onEnter = function() {
 
 	var that = this;
 
-	//prevent canvas from losing focus when pause menu is clicked on
-	this.pauseMenu.addEventListener("mousedown", function(event) { event.preventDefault(); });
-
 	this.onResumeButtonClicked = function(event) {
 		that.gameManager.popState();
 		event.preventDefault();
+		that.gameManager.canvas.focus();
 	}
 
 	this.onOptionsButtonClicked = function(event) {
