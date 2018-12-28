@@ -7,23 +7,19 @@
 	<link rel="stylesheet" type="text/css" href="src/style.css">
 </head>
 <body>
-	<div id="container">
 	<canvas
 		id="canvas"
-		width="1000"
-		height="563"
 		oncontextmenu="return false;"
 		tabindex=1>
 	</canvas>
-	</div>
+
 	<div id="pauseMenu">
 		<p>Paused</p>
 		<button>Resume</button>
 		<button>Options</button>
 	</div>
 
-	<div>
-		<div>FPS: <span id="fpsLabel"></span></div>
+	<div id="debugMenu">
 		<div>Free cam (1): <span id="freeCamLabel">OFF</span></div>
 		<div>Player collision hull (2): <span id="playerCollisionHullLabel">OFF</span></div>
 		<div>Environment tree (3): <span id="environmentTreeLabel">OFF</span></div>
@@ -35,6 +31,7 @@
 	<script src="res/three.js-r99/inflate.min.js"></script>
 	<script src="res/three.js-r99/FBXLoader.js"></script>
 	<script src="res/three.js-r99/OBJLoader.js"></script>
+	<script src="res/three.js-r99/stats.js"></script>
 	
 	<script src="src/input.js"></script>
 	<script src="src/utilities.js"></script>

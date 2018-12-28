@@ -1,5 +1,5 @@
 function KdTree(scene) {
-	var maxNodeGeos = 5;
+	var maxNodeGeos = 10;
 	var objs;
 	var root;
 	this.boundsHelper = [];

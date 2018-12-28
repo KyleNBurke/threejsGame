@@ -1,25 +1,29 @@
 function GameManager() {
 	this.canvas = document.getElementById("canvas");
+	var width = window.innerWidth;//this.canvas.getAttribute("width");
+	var height = window.innerHeight;//this.canvas.getAttribute("height");
+	this.canvas.width = width;
+	this.canvas.height = height;
 	this.canvas.focus();
-	var width = this.canvas.getAttribute("width");
-	var height = this.canvas.getAttribute("height");
-
 	var renderer = new THREE.WebGLRenderer({canvas: canvas});
 	renderer.setClearColor(0x6495ED);
-
 	this.scene = new THREE.Scene();
-
 	this.scene.add(new THREE.AxesHelper());
-
 	this.camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 10000);
 	this.scene.add(this.camera);
+	var that = this;
 
-	this.fpsLabel = document.getElementById("fpsLabel");
 	this.freeCamLabel = document.getElementById("freeCamLabel");
 	this.playerCollisionHullLabel = document.getElementById("playerCollisionHullLabel");
 	this.environmentTreeLabel = document.getElementById("environmentTreeLabel");
 	this.objectBoundsLabel = document.getElementById("objectBoundsLabel");
 	this.terrainFaceBoundsLabel = document.getElementById("terrainFaceBoundsLabel");
+
+	var stats = new Stats();
+	document.body.appendChild(stats.dom);
+	stats.dom.id = "stats";
+	stats.dom.style = null;
+	stats.showPanel(0);
 
 	var maxFPS = 120;
 	var elapsedTime = 0;
@@ -34,6 +38,7 @@ function GameManager() {
 		var updates = 0;
 
 		if(timeStamp >= lastTimeStamp + timeStep) {
+			stats.begin();
 			elapsedTime += timeStamp - lastTimeStamp;
 			lastTimeStamp = timeStamp;
 
@@ -49,6 +54,7 @@ function GameManager() {
 			}
 
 			renderer.render(this.scene, this.camera);
+			stats.end();
 		}
 
 		requestAnimationFrame(this.mainLoop.bind(this));
@@ -80,5 +86,15 @@ function GameManager() {
 			states[states.length - 1].onUnpause();
 	}
 
+	function onResize() {
+		that.canvas.width = window.innerWidth;
+		that.canvas.height = window.innerHeight;
+
+		renderer.setSize(that.canvas.width, that.canvas.height);
+		that.camera.aspect = that.canvas.width / that.canvas.height;
+		that.camera.updateProjectionMatrix();
+	}
+
+	window.addEventListener("resize", onResize);
 	this.addState(new GameplayState(this));
 }

@@ -1,5 +1,6 @@
 body {
 	font-family: Sans-serif;
+	margin: 0;
 }
 
 button {
@@ -19,8 +20,7 @@ button:hover {
 
 #canvas {
 	position: absolute;
-	left: 50%;
-	transform: translate(-50%, 0);
+	display: block;
 }
 
 #pauseMenu {
@@ -28,9 +28,27 @@ button:hover {
 	width: 300px;
 	text-align: center;
 	border: solid;
-	top: 200px;
-	left: 0%;
-	transform: translate(-0%, 0);
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 	background-color: lightgrey;
 	display: none;
+}
+
+#debugMenu {
+	position: absolute;
+	left: 0;
+	top: 0;
+	color: white;
+	text-shadow:
+		-1px -1px 0 black,
+		1px -1px 0 black,
+		-1px 1px 0 black,
+		1px 1px 0 black;
+}
+
+#stats {
+	position: absolute;
+	top: 0px;
+	right: 0px;
 }

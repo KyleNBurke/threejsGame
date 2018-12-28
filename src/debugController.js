@@ -1,6 +1,4 @@
 function DebugController(gameManager, stage, player, camera) {
-    var currTime = 0;
-    var currFrames = 0;
     var freeCamToggle = false;
     var freeCamMoveFactor = 0.05;
     var freeCamRotationFactor = 0.001;
@@ -10,15 +8,6 @@ function DebugController(gameManager, stage, player, camera) {
     var terrainFaceBoundsToggle = false;
 
     this.update = function(timeStep) {
-        currTime += timeStep;
-	    currFrames++;
-
-        if(currTime >= 1) {
-            gameManager.fpsLabel.textContent = currFrames;
-            currTime = 0;
-            currFrames = 0;
-        }
-
         if(Input.getInstance().isKeyPressed(49)) //1
             toggleFreeCam();
 
