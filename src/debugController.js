@@ -4,10 +4,10 @@ function DebugController(gameManager, stage, player, camera) {
     var freeCamToggle = false;
     var freeCamMoveFactor = 0.05;
     var freeCamRotationFactor = 0.001;
-    var boundingBoxesToggle = false;
-    var wireframesToggle = false;
-    var octreeToggle = false;
-    var playerCollisionHull = false;
+    var playerCollisionHullToggle = false;
+    var environmentTreeToggle = false;
+    var objectBoundsToggle = false;
+    var terrainFaceBoundsToggle = false;
 
     this.update = function(timeStep) {
         currTime += timeStep;
@@ -23,16 +23,16 @@ function DebugController(gameManager, stage, player, camera) {
             toggleFreeCam();
 
         if(Input.getInstance().isKeyPressed(50)) //2
-            toggleBoundingBoxes();
+            togglePlayerCollisionHull();
         
         if(Input.getInstance().isKeyPressed(51)) //3
-            toggleWireframe();
-
+            toggleEnvironmentTree();
+        
         if(Input.getInstance().isKeyPressed(52)) //4
-            toggleOctree();
-
+            toggleObjectBounds();
+        
         if(Input.getInstance().isKeyPressed(53)) //5
-            togglePlayerCollisionHull();
+            toggleTerrainFaceBounds();
         
         if(freeCamToggle) {
             var direction = new THREE.Vector3();
@@ -70,7 +70,6 @@ function DebugController(gameManager, stage, player, camera) {
 
     var toggleFreeCam = function() {
         freeCamToggle = !freeCamToggle;
-
         gameManager.freeCamLabel.textContent = freeCamToggle ? "ON" : "OFF";
 
         if(freeCamToggle)
@@ -79,38 +78,36 @@ function DebugController(gameManager, stage, player, camera) {
             player.exitFreeCam();
     }
 
-    var toggleBoundingBoxes = function() {
-        boundingBoxesToggle = !boundingBoxesToggle;
-
-        gameManager.boundingBoxesLabel.textContent = boundingBoxesToggle ? "ON" : "OFF";
-
-        for(var i = 0; i < stage.boundingBoxes.length; i++)
-            stage.boundingBoxes[i].material.visible = boundingBoxesToggle;
-    }
-
-    var toggleWireframe = function() {
-        wireframesToggle = !wireframesToggle;
-
-        gameManager.wireframesLabel.textContent = wireframesToggle ? "ON" : "OFF";
-
-        for(var i = 0; i < stage.objects.length; i++)
-            stage.objects[i].material.wireframe = wireframesToggle;
-    }
-
-    var toggleOctree = function() {
-        octreeToggle = !octreeToggle;
-
-        gameManager.octreeToggle.textContent = octreeToggle ? "ON" : "OFF";
-
-        for(var i = 0; i < stage.octree.boundingBoxes.length; i++)
-            stage.octree.boundingBoxes[i].material.visible = octreeToggle;
-    }
-
     var togglePlayerCollisionHull = function() {
-        playerCollisionHull = !playerCollisionHull;
+        playerCollisionHullToggle = !playerCollisionHullToggle;
+        gameManager.playerCollisionHullLabel.textContent = playerCollisionHullToggle ? "ON" : "OFF";
+        player.collisionMesh.material.visible = playerCollisionHullToggle;
+    }
 
-        gameManager.playerCollisionHull.textContent = playerCollisionHull ? "ON" : "OFF";
+    var toggleEnvironmentTree = function() {
+        environmentTreeToggle = !environmentTreeToggle;
+        gameManager.environmentTreeLabel.textContent = environmentTreeToggle ? "ON" : "OFF";
 
-        player.collisionMesh.material.visible = playerCollisionHull;
+        var bounds = stage.kdTree.boundsHelper;
+        for(var i = 0; i < bounds.length; i++)
+            bounds[i].material.visible = environmentTreeToggle;
+    }
+
+    var toggleObjectBounds = function() {
+        objectBoundsToggle = !objectBoundsToggle;
+        gameManager.objectBoundsLabel.textContent = objectBoundsToggle ? "ON" : "OFF";
+
+        var bounds = stage.objectBoundsHelpers;
+        for(var i = 0; i < bounds.length; i++)
+            bounds[i].material.visible = objectBoundsToggle;
+    }
+
+    var toggleTerrainFaceBounds = function() {
+        terrainFaceBoundsToggle = !terrainFaceBoundsToggle;
+        gameManager.terrainFaceBoundsLabel.textContent = terrainFaceBoundsToggle ? "ON" : "OFF";
+
+        var bounds = stage.terrainFaceBoundsHelpers;
+        for(var i = 0; i < bounds.length; i++)
+            bounds[i].material.visible = terrainFaceBoundsToggle;
     }
 }

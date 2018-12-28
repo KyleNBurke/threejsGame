@@ -1,7 +1,9 @@
 function KdTree(scene) {
-	var maxNodeGeos = 2;
+	var maxNodeGeos = 5;
 	var objs;
 	var root;
+	this.boundsHelper = [];
+	var that = this;
 
 	function Node(bounds) {
 		this.bounds = bounds;
@@ -9,7 +11,10 @@ function KdTree(scene) {
 		this.childB;
 		this.objsIndex = [];
 
-		scene.add(new THREE.Box3Helper(this.bounds));
+		var b = new THREE.Box3Helper(this.bounds);
+		b.material.visible = false;
+		that.boundsHelper.push(b);
+		scene.add(b);
 	}
 
 	this.construct = function(objsPassed, bounds, scaleFactor) {

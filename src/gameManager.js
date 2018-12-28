@@ -16,10 +16,10 @@ function GameManager() {
 
 	this.fpsLabel = document.getElementById("fpsLabel");
 	this.freeCamLabel = document.getElementById("freeCamLabel");
-	this.boundingBoxesLabel = document.getElementById("boundingBoxesLabel");
-	this.wireframesLabel = document.getElementById("wireframesLabel");
-	this.octreeToggle = document.getElementById("octreeLabel");
-	this.playerCollisionHull = document.getElementById("playerCollisionHull");
+	this.playerCollisionHullLabel = document.getElementById("playerCollisionHullLabel");
+	this.environmentTreeLabel = document.getElementById("environmentTreeLabel");
+	this.objectBoundsLabel = document.getElementById("objectBoundsLabel");
+	this.terrainFaceBoundsLabel = document.getElementById("terrainFaceBoundsLabel");
 
 	var maxFPS = 120;
 	var elapsedTime = 0;
