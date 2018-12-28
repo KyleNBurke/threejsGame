@@ -23,7 +23,7 @@ function Player(scene, camera, stage) {
 	var cameraOffset = new THREE.Vector3(-0.8, 2, 1);
 	var velocity = new THREE.Vector3();
 	var gravityVelocity = 0;
-	var terminalVelocity = 20;
+	var terminalVelocity = 40;
 	var acceleration = 0.6;
 	var deceleration = 0.9;
 	var jumpVelociy = 17;
