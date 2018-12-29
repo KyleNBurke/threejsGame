@@ -6,11 +6,13 @@ GameplayState.prototype = Object.create(UpdatableState.prototype);
 GameplayState.prototype.constructor = UpdatableState;
 
 GameplayState.prototype.onEnter = function() {
-	var ambientLight = new THREE.AmbientLight(0x404040);
+	var ambientLight = new THREE.AmbientLight(0x404040, 1);
 	this.gameManager.scene.add(ambientLight);
-	var pointLight = new THREE.PointLight(0x404040, 1);
-	pointLight.position.set(0, 8, 0);
-	this.gameManager.scene.add(pointLight);
+	var pointLight = new THREE.PointLight(0x404040, 1.5);
+	pointLight.position.set(32, 16, 32);
+	var pointLight2 = new THREE.PointLight(0x404040, 1.5);
+	pointLight2.position.set(-32, 16, -32);
+	this.gameManager.scene.add(pointLight2);
 	
 	this.stage = new Stage(this.gameManager.scene);
 	this.stage.load("res/stages/stage3.obj");

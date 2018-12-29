@@ -104,8 +104,8 @@ function Player(scene, camera, stage) {
 			if(sphericalPos.phi < 0.01)
 				sphericalPos.phi = 0.01;
 
-			if(sphericalPos.phi > Math.PI)
-				sphericalPos.phi = Math.PI;
+			if(sphericalPos.phi > 3)
+				sphericalPos.phi = 3;
 
 			updateCamera();
 		}
@@ -115,8 +115,8 @@ function Player(scene, camera, stage) {
 		if(mouseScrollAmount != 0) {
 			sphericalPos.radius -= mouseScrollAmount * zoomFactor;
 
-			if(sphericalPos.radius < 0.1)
-				sphericalPos.radius = 0.1;
+			if(sphericalPos.radius < 2)
+				sphericalPos.radius = 2;
 
 			updateCamera();
 		}
